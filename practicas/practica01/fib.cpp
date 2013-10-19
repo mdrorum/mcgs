@@ -1,26 +1,32 @@
 /** * fib.cpp
-    * Codigo basico que muestra la secuencia de Finonacii de la longitud dada *
-    * By Oscar Romero *
+    * Código que muestra la secuencia de Finonacii de la longitud dada *
+    * By Óscar Romero *
 */
 #include <iostream>
-#include <stdlib.h>
 
-int main( int argc, char** argv) {
-	if ( argc > 2 || argc == 1 ) {
-		printf("Fibonacci takes one postitive integer greater\
-			than two as it's argument\n");
-		return EXIT_SUCCESS;
-	}
-	int a, b;
-	a = 0;
-	b = 1;
-	printf( "%d", b );
-	for( int i = 0; i + a <= atof( argv[1] ); b = i ) {
-		i = a + b;
+using namespace std;
+int a, b;     //Los números que inician la serie
+int limite;   //Número limite de iteraciones
+int iter = 0; //Número de iteraciones
+int suma;     //Suma de los números de la serie
+
+int main(){
+	std::cout << "Introduzca los numeros iniciales de la serie, separados por un espacio: " << std::endl;
+	std:cin >> a >> b; 
+	std::cout << endl;
+
+	std::cout << "Introduzca el numero de iteraciones en la serie: " << std::endl;
+	std::cin >> limite;
+	std::cout << a << " " << b << " ";
+
+	while (iter < limite-2) {
+		iter++;
+		suma = a + b;
+		std::cout << suma << " ";
 		a = b;
-		printf( ", %d", i );
+		b = suma;
 	}
-	printf("\n");
-	return EXIT_SUCCESS;
+	std::cout << endl;
+	return 0;
 }
 
