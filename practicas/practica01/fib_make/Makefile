@@ -9,8 +9,7 @@ MSG2 = "Generando documentación..."
 all: mensaje1 fib.exe mensaje2 doc
 
 fib.exe: $(OBJ)
-	$(CC) fib.cpp -o fib
-#	$(CC) $^ -o $@
+	$(CC) $^ -o $@
 
 doc: $(OBJ)
 	doxygen Doxyfile

@@ -3,7 +3,7 @@
  * 
  * El usuario debe introducir la pareja de números iniciales y el número de iteraciones.
  *
- * <a href="http://es.wikipedia.org/wiki/Sucesi%C3%B3n_de_Fibonacci">Serie de Fibonacii en Wikipedia</a> 
+ * <a href="http://es.wikipedia.org/wiki/Sucesi%C3%B3n_de_Fibonacci">Serie de Fibonacci en Wikipedia</a> 
  * 
  * \date 19 de Octubre de 2013
 
