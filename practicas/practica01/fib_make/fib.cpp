@@ -1,5 +1,5 @@
 /** \file fib.cpp
- * Generación de la serie de Fibonacii, donde cada término es la suma de los dos anteriores.
+ * Generación de la serie de Fibonacci, donde cada término es la suma de los dos anteriores.
  * 
  * El usuario debe introducir la pareja de números iniciales y el número de iteraciones.
  *
