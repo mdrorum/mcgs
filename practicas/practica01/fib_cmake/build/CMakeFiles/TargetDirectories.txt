@@ -1,0 +1,3 @@
+/home/pi/mcgs/practicas/practica01/fib_cmake/build/CMakeFiles/apidoc.dir
+/home/pi/mcgs/practicas/practica01/fib_cmake/build/CMakeFiles/apidoc_forced.dir
+/home/pi/mcgs/practicas/practica01/fib_cmake/build/CMakeFiles/fib.dir
