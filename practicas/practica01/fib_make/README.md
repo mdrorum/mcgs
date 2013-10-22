@@ -6,7 +6,8 @@ Para probar el programa, escribir en el prompt: ./fib.exe
 
 La documentación generada se encuentra en las carpetas: html y latex
 
-html: contiene el fichero "fib_8cpp.html" con la documentación del programa.
+html: contiene el fichero "fib_8cpp.html" con la documentación del programa, que puede verse en el archivo: doc.html
+
 latex: para la creación de documentación pdf
 
 
