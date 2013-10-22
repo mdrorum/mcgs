@@ -5,6 +5,7 @@ Dentro de la anterior carpeta, crear otra con el nombre: build
 Situarse en esa carpeta: cd build
 
 Para generar el fichero Makefile basta con escribir en el promt: cmake ..
+
 Para generar código y la documentación basta con escribir en el prompt: make
 
 Para probar el programa, escribir en el prompt: ./fib
