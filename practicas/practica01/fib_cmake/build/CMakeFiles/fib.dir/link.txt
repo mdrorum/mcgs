@@ -1,1 +1,0 @@
-/usr/bin/c++       CMakeFiles/fib.dir/fib.cpp.o  -o fib -rdynamic 
