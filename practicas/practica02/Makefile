@@ -8,7 +8,7 @@ MSG2 = "Generando documentación..."
 
 all: mensaje1 loop_exercises.solucion mensaje2 doc
 
-fib.exe: $(OBJ)
+loop_exercises.solucion: $(OBJ)
 	$(CC) $^ -o $@ -std=c++0x
 
 doc: $(OBJ)
