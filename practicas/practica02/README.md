@@ -11,3 +11,7 @@ Practica 2
 - Create the loops that the exercises (loop_exercises.cpp) don't implement
 
 - Transform loops in the exercise to ranged loops
+- 
+Notas: Compilado en un Raspberry Pi Modelo-B con S.O. Raspbian 
+        g++ loop_exercises.solucion.cpp -o loop_exercises.solucion -std=c++0x
+        make necesita la opcion -std=c++0x para poder compilar en raspberry pi
