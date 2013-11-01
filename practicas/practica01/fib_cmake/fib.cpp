@@ -7,7 +7,7 @@
  * 
  * \date 19 de Octubre de 2013
 
- */
+*/
 
 // El archivo de cabecera "iostream" permite usar cout y cin.
 #include <iostream>
@@ -26,22 +26,22 @@ int suma;
 //! La función principal solicita los dos números iniciales de la serie y el número de iteraciones
 int main(){
 
-	std::cout << "Introduzca la pareja de números iniciales de la serie, separados por un espacio: " << std::endl;
-	std::cin >> a >> b; 
-	std::cout << std::endl;
+    std::cout << "Introduzca la pareja de números iniciales de la serie, separados por un espacio: " << std::endl;
+    std::cin >> a >> b; 
+    std::cout << std::endl;
 
-	std::cout << "Introduzca el número de iteraciones en la serie: " << std::endl;
-	std::cin >> limite;
-	std::cout << a << " " << b << " ";
+    std::cout << "Introduzca el número de iteraciones en la serie: " << std::endl;
+    std::cin >> limite;
+    std::cout << a << " " << b << " ";
 
-	while (iter < limite-2) {
-		iter++;
-		suma = a + b;
-		std::cout << suma << " ";
-		a = b;
-		b = suma;
-	}
-	std::cout << std::endl;
-	return 0;
+    while (iter < limite-2) {
+        iter++;
+        suma = a + b;
+        std::cout << suma << " ";
+        a = b;
+        b = suma;
+    }
+    std::cout << std::endl;
+    return 0;
 }
 
