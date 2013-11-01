@@ -16,4 +16,4 @@ Notas: Compilado en un Raspberry Pi Modelo-B con S.O. Raspbian
 
         g++ loop_exercises.solucion.cpp -o loop_exercises.solucion -std=c++0x
 
-El archivo loop_doc.html contiene la documentación del ejercicio  loop_exercises.solucion.cpp generado por Doxyfile
+El archivo loop_doc.html contiene la documentación del ejercicio  loop_exercises.solucion.cpp y ha sido generado por Doxyfile
