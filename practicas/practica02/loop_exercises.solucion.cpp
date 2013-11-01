@@ -7,12 +7,10 @@
 #include <iostream>
 #include <vector>
 #include <map>
-#include <ctime>
 #include <math.h>       /* Para el uso de floor */
 
 int main()
 {
-    
     //! Sin usar la sintaxis c++11:
 
 	std::cout << "\033[33m" << "SOLUCIONES DE LA PRACTICA 2 del MUCGS" << std::endl << std::endl;
@@ -41,6 +39,7 @@ int main()
 
 	
     //! Ejercicio 3: Crea un bucle que extrae cadenas y numeros de un map y los guarda en otro map como char* y entero.
+
 	std::cout << "Ejercicio 3: Bucle que toma un map de string/float y genera un map char*/int" << std::endl;
 	std::map< std::string, float > mi_map_sf = { //! Define el map de string/float y rellena con cotizaciones
 	{ "Euro", 1.0f }, 
@@ -65,6 +64,7 @@ int main()
 	std::cout << std::endl;
   
     //! Ejercicio 4. Cambia el map anterior añadiendo "yeah!" y redondeando los números
+
 	std::cout << "Ejercicio 4: Bucle que toma un map de string/float en el que añade yeah! y redondea" << std::endl;
 	std::cout << "Contenido del map string/float antes de la modificación" << std::endl;
 	mi_it_map = mi_map_sf.begin(); //! Vuelve a colocar el iterador al comienzo del map
