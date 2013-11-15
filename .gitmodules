@@ -1,0 +1,6 @@
+[submodule "bots"]
+	path = bots
+	url = https://github.com/clnznr/bots.git
+[submodule "robots/bots"]
+	path = robots/bots
+	url = https://github.com/clnznr/bots.git
