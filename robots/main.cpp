@@ -47,20 +47,22 @@ void pinta_escenario( bots mis_bots, int paso)
 int main (int argc, char* argv[])
 {
 
-	std::cout << "\x1B[2J\x1B[H"; // Despeja la pantalla del terminal
-	std::cout << "A jugar!!"
-	return(0);
+	//std::cout << "\x1B[2J\x1B[H"; // Despeja la pantalla del terminal
+	std::cout << "A jugar!!" << std::endl;
+
 	boost::asio::io_service io_service; // Inicia comunicaciones
 
 	tcp::resolver resolver(io_service); // Resuelve la comunicación
 	auto endpoint_iterator = resolver.resolve({ argv[1], argv[2] }); // Iterador hacia puerto y dirección
 
 	std::shared_ptr<tcp::socket> socket(new tcp::socket(io_service)); // Puntero compartido hacia el socket
+
 	boost::asio::connect(*socket, endpoint_iterator); // Conexión
 
 	int paso = 0;
 
-	// Variables del hilo
+	// Variables de comunicacion
+
 	boost::mutex state_mutex;
 	bool gameover = false;
 	bool connected = false;
@@ -76,12 +78,83 @@ int main (int argc, char* argv[])
 	mi_bots.generate(4,4); // Número de equipos y número de miembros por equipo, usa la pila
 	// mi_bots->generate(3,10); // al monticulo
 	
+	boost::asio::streambuf buf;
+	
+	read_until(*socket, buf, "\n");
 
+	std::string data;
+	std::istream is(&buf);
+	std::getline(is, data);
+
+
+	std::istringstream mi_stream(data);
+
+	std::string command;
+	mi_stream >> command;
+		
+	// Lee la información inicial	
+	if(command == "welcome") 
+	{
+        mi_stream >> id;
+        std::cout << "team id: " << id << std::endl;
+        //ai.set_team(id);
+
+        mi_stream >> field_width;
+        mi_stream >> field_height;
+        mi_bots.set_size(field_width, field_height);
+        std::cout << "setting field: " << field_width << " x " << field_height << std::endl;
+        
+        //set_screen(win_width, win_height, field_width, field_height);
+        //connected = true;
+    }
+
+	//while ( std::cin.get() != ' ' );
+
+    
 
 	while (!gameover) 
 	{
-		mi_bots.step();
-		paso++;
+		{
+			read_until(*socket, buf, "\n"); //Leo el bufer
+			std::istream is2(&buf); // Input Stream (lectura) a la clase buf
+			std::getline(is2, data); // Convierte a String y guarda en data
+			std::istringstream mi_stream2(data); // Input Stream (letura) al string data
+			mi_stream2 >> command;
+
+			//Lee el estado del escenario
+			if(command == "state") 
+			{
+				std::cout << "Ha llegado: " << command << std::endl;
+				std::stringstream state;
+
+				while(!mi_stream2.eof()) {
+					std::string a;
+					mi_stream2 >> a;
+					state << a << " ";
+				}
+				std::cout << state.str() << std::endl;
+
+				boost::archive::text_iarchive ia(state);
+				{
+					// mutex:
+					// segfaults if it draws during a state update (drawing +
+					// incomplete state is fatal)
+					boost::mutex::scoped_lock lock(state_mutex);
+					ia >> mi_bots;
+					paso++;
+					std::cout << "\x1B[2J\x1B[H";
+					pinta_escenario(mi_bots, paso);
+				}
+			}
+			else 
+			{
+				std::cout << "GAME OVER " << command << std::endl;
+			}
+			
+		}
+			
+		//mi_bots.step();
+		//paso++;
 
 		mi_bots.for_each_bot([&] ( bot & b ) {
 			//std::cout << b.get_team() << "\t"; // std::endl;
@@ -96,19 +169,22 @@ int main (int argc, char* argv[])
 			//{
 			//	b.try_to_do(bot::W);
 			//}
+
 			
 			std::stringstream stream;
-            //stream << "move " << b.get_x() << " " << b.get_y() << " " << b.get_next_direction();
-            stream << "gameover";
+            stream << "move " << b.get_x() << " " << b.get_y() << " " << bot::W;
+            //stream << "gameover";
             send(*socket, stream.str());
+            
+            
 			
 		});
 				
 		//pinta_escenario(mis_bots_ord);
-		pinta_escenario(mi_bots, paso);
+		//pinta_escenario(mi_bots, paso);
 
 		while ( std::cin.get() != ' ' );
-		std::cout << "\x1B[2J\x1B[H";
+		//std::cout << "\x1B[2J\x1B[H";
 
 	}
 	return 0;
