@@ -152,13 +152,20 @@ private:
      boost::mutex::scoped_lock lock(_state_mutex);
      ia >> _bots;
     }
-    std::cout << "State updated" << std::endl;
+    //Muestra estado de los bots
     pinta_escenario(_bots, _field_width, _field_height);
    }
 
          for(auto b : _bots.team_bots(_id)) {
           std::ostream _packetToSendstream(&_packetToSend);
-          _packetToSendstream << "move " << b->get_x() << " " << b->get_y() << " 3\n";
+          int hacia = rand()%9;
+          std::string cadena = std::to_string(hacia);
+			
+          //stream << "move " << b.get_x() << " " << b.get_y() << " " << bot::W;
+          _packetToSendstream << "move " << b->get_x() << " " << b->get_y() << " " << cadena << "\n";
+          //std::cout << bot::N << bot::NE << bot::E << bot::SE << bot::NOTHING << std::endl;
+          //std::cout << cadena << std::endl;
+          //_packetToSendstream << "move " << b->get_x() << " " << b->get_y() << " 3\n";
 
           boost::asio::async_write(_socket, _packetToSend,
      boost::bind(&client_bot::handle_write_request, this,
