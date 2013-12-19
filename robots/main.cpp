@@ -5,15 +5,9 @@
 
 using boost::asio::ip::tcp;
 
-void async_send(tcp::socket &socket, const std::string & str) 
+void pinta_escenario( bots & mis_bots, bot::field_size cols, bot::field_size filas)
 {
-    boost::asio::async_write(socket, boost::asio::buffer(str + "\n"), boost::asio::transfer_all());
-}
-
-void pinta_escenario( bots mis_bots, int paso, int cols, int filas)
-{
-	std::cout << "Paso : " << paso << std::endl;
-
+	std::cout << "\x1B[2J\x1B[H"; // Despeja la pantalla del terminal
 	for ( int col = 0; col < cols + 2; col++ ) // Primera fila de X
         	std::cout << 'X'; 
 	std::cout << std::endl;
@@ -36,101 +30,173 @@ void pinta_escenario( bots mis_bots, int paso, int cols, int filas)
 	std::cout << std::endl;
 }
 
+class client_bot
+{
+private:
+	tcp::resolver _resolver;
+	tcp::socket _socket;
+	boost::asio::streambuf _packetToSend;
+	boost::asio::streambuf _receiver;
+	bots & _bots;
+	boost::mutex & _state_mutex;
+	bot::team_id & _id;
+	bot::field_size _field_width;
+	bot::field_size _field_height;
 
+public:
+ client_bot(boost::asio::io_service& io_service, const std::string& server,
+   const std::string& port, bots & bts, boost::mutex & sm, bot::team_id & id)
+ : _resolver(io_service),
+   _socket(io_service),
+   _bots(bts),
+   _state_mutex(sm),
+   _id(id)
+ {
+ // Start an asynchronous resolve to translate the server and service names
+ // into a list of endpoints.
+ std::cout << "Resolving..." << std::endl;
+ tcp::resolver::query query(server, port);
+ _resolver.async_resolve(query,
+  boost::bind(&client_bot::handle_resolve, this,
+  boost::asio::placeholders::error,
+  boost::asio::placeholders::iterator));
+ }
+
+private:
+ void handle_resolve(const boost::system::error_code& err,
+   tcp::resolver::iterator endpoint_iterator)
+ {
+  if (!err)
+  {
+   // Attempt a connection to the first endpoint in the list. Each endpoint
+   // will be tried until we successfully establish a connection.
+   std::cout << "Connecting to " << endpoint_iterator->host_name() << std::endl;
+   tcp::endpoint endpoint = *endpoint_iterator;
+   _socket.async_connect(endpoint,
+    boost::bind(&client_bot::handle_connect, this,
+    boost::asio::placeholders::error, ++endpoint_iterator));
+  }
+  else
+  {
+   std::cout << "Error resolving: " << err.message() << "\n";
+  }
+ }
+
+ void handle_connect(const boost::system::error_code& err,
+   tcp::resolver::iterator endpoint_iterator)
+ {
+  if (!err)
+  {
+
+   // The connection was successful. Send the request.
+   std::cout << "Retrieving..." << std::endl;
+   // Read the response status line.
+   boost::asio::async_read_until(_socket, _receiver, "\n",
+    boost::bind(&client_bot::handle_read_command, this,
+    boost::asio::placeholders::error));
+  }
+  else if (endpoint_iterator != tcp::resolver::iterator())
+  {
+   // The connection failed. Try the next endpoint in the list.
+   _socket.close();
+   tcp::endpoint endpoint = *endpoint_iterator;
+   _socket.async_connect(endpoint,
+    boost::bind(&client_bot::handle_connect, this,
+    boost::asio::placeholders::error, ++endpoint_iterator));
+  }
+  else
+  {
+   std::cout << "Error: " << err.message() << "\n";
+  }
+ }
+
+ void handle_read_command(const boost::system::error_code& err)
+ {
+  if (!err)
+  {
+   // Check that response is OK.
+   std::string data;
+   std::istream _receiverstream(&_receiver);
+   std::getline(_receiverstream, data);
+
+   std::istringstream stream(data);
+   std::string command;
+   stream >> command;
+
+   // Read the response headers, which are terminated by a blank line.
+   if(command == "welcome") {
+    stream >> _id;
+    stream >> _field_width;
+    stream >> _field_height;
+    std::cout << data << std::endl;
+    //ai.set_team(id);
+    while(!stream.eof()) {
+     std::string a;
+     stream >> a;
+     //state << a << " ";
+    }
+   }
+   else if(command == "state") {
+
+    std::stringstream state;
+    while(!stream.eof()) {
+     std::string a;
+     stream >> a;
+     state << a << " ";
+    }
+    boost::archive::text_iarchive ia(state);
+    {
+     // mutex:
+     // segfaults if it draws during a state update (drawing +
+     // incomplete state is fatal)
+     boost::mutex::scoped_lock lock(_state_mutex);
+     ia >> _bots;
+    }
+    std::cout << "State updated" << std::endl;
+    pinta_escenario(_bots, _field_width, _field_height);
+   }
+
+         for(auto b : _bots.team_bots(_id)) {
+          std::ostream _packetToSendstream(&_packetToSend);
+          _packetToSendstream << "move " << b->get_x() << " " << b->get_y() << " 3\n";
+
+          boost::asio::async_write(_socket, _packetToSend,
+     boost::bind(&client_bot::handle_write_request, this,
+     boost::asio::placeholders::error));
+         }
+   boost::asio::async_read_until(_socket, _receiver, "\n",
+    boost::bind(&client_bot::handle_read_command, this,
+    boost::asio::placeholders::error));
+  }
+  else
+  {
+   std::cout << "Error reading command: " << err << "\n";
+  }
+ }
+
+ void handle_write_request(const boost::system::error_code& err)
+ {
+     if (!err)
+     {
+
+     }
+     else
+     {
+      std::cout << "Error writing: " << err.message() << "\n";
+     }
+ }
+};
 
 int main (int argc, char* argv[])
 {
-	boost::asio::io_service io_service; // Inicia comunicaciones
-	tcp::resolver resolver(io_service); // Resuelve la comunicación
-	auto endpoint_iterator = resolver.resolve({ argv[1], argv[2] }); // Iterador hacia puerto y dirección
-	std::shared_ptr<tcp::socket> socket(new tcp::socket(io_service)); // Puntero compartido hacia el socket
-	boost::asio::connect(*socket, endpoint_iterator); // Conexión
-	
-	io_service.run();
-	
-	
-	int paso = 0;
-
-	// Variables de comunicacion
-	boost::mutex state_mutex;
-	bool gameover = false;
-	bool connected = false;
-	bot::team_id id = 6666;
-	bot::field_size field_width;
-	bot::field_size field_height;
-	int win_width = 500;
-	int win_height = 500;
 	// Mi instancia de la clase bots        
-	bots mi_bots = bots(field_width, field_height); // Tamaño del campo 10x10, usa la pila
-	//Lee el bufer de comunicaciones
-	boost::asio::streambuf buf;
-	read_until(*socket, buf, "\n");
-	std::string data;
-	std::istream is(&buf);
-	std::getline(is, data);
-	std::istringstream mi_stream(data);
-	// Lee la primer palabra
-	std::string command;
-	mi_stream >> command;
-	// Lee la información inicial	
-	if(command == "welcome") 
-	{
-        mi_stream >> id;
-        std::cout << "team id: " << id << std::endl;
-        //ai.set_team(id);
-        mi_stream >> field_width;
-        mi_stream >> field_height;
-        mi_bots.set_size(field_width, field_height);
-        std::cout << "setting field: " << field_width << " x " << field_height << std::endl;
-    }
-    
+	bots mi_bots;
+	bot::team_id id = 1001;
 
-	while (!gameover) 
-	{
-		{
-			read_until(*socket, buf, "\n"); //Leo el bufer
-			std::istream is2(&buf); // Input Stream (lectura) a la clase buf
-			std::getline(is2, data); // Convierte a String y guarda en data
-			std::istringstream mi_stream2(data); // Input Stream (letura) al string data
-			mi_stream2 >> command;
+	boost::asio::io_service io_service; // Inicia comunicaciones
+	boost::mutex state_mutex;
+	client_bot mi_cliente_bot(io_service, argv[1], argv[2], mi_bots, state_mutex, id);
+	io_service.run();
 
-			//Lee el estado del escenario
-			if(command == "state") 
-			{
-				std::stringstream state;
-
-				while(!mi_stream2.eof()) {
-					std::string a;
-					mi_stream2 >> a;
-					state << a << " ";
-				}
-				std::cout << state.str() << std::endl;
-
-				boost::archive::text_iarchive ia(state);
-				{
-					boost::mutex::scoped_lock lock(state_mutex);
-					ia >> mi_bots;
-					paso++;
-					std::cout << "\x1B[2J\x1B[H"; // Limpia pantalla
-					pinta_escenario(mi_bots, paso, field_width, field_height);
-				}
-			}
-			else 
-			{
-				std::cout << "GAME OVER " << command << std::endl;
-			}
-			
-		}
-
-		mi_bots.for_each_bot([&] ( bot & b ) {
-		std::stringstream stream;
-		// Envia movimeinte del bot
-        stream << "move " << b.get_x() << " " << b.get_y() << " " << bot::W;
-        async_send(*socket, stream.str());
-			
-		});
-
-		//while ( std::cin.get() != ' ' ); // Espera entrada espacio
-	}
-	return 0;
+	return(0);
 }
